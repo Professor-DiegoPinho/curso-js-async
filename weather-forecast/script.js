@@ -1,3 +1,5 @@
+const OPEN_WEATHER_API = "e333ec48ef9ab8469f526f37dbe272f3";
+
 const getUserLocation = () => {
   if ("geolocation" in navigator) {
     const geolocationOptions = {
@@ -17,6 +19,17 @@ const getCoords = (position) => {
   console.log(`Latitude: ${latitude}`);
   console.log(`Longitude: ${longitude}`);
   console.log(`Precisão: ${accuracy} metros`);
+
+
+  const baseURL = `https://api.openweathermap.org/data/2.5/weather`;
+  const options = `?lat=${latitude}&lon=${longitude}&appid=${OPEN_WEATHER_API}`;
+  const url = `${baseURL}${options}`;
+
+
+  fetch(url).then(data => data.json()).then(data => {
+    console.log(data);
+  });
+
 };
 
 const handleError = (error) => {
