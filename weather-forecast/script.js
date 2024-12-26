@@ -1,6 +1,6 @@
 const OPEN_WEATHER_API = "e333ec48ef9ab8469f526f37dbe272f3";
 
-const getUserLocation = () => {
+function getUserLocation() {
   if ("geolocation" in navigator) {
     const geolocationOptions = {
       enableHighAccuracy: true,
@@ -10,35 +10,47 @@ const getUserLocation = () => {
 
     navigator.geolocation.getCurrentPosition(getCoords, handleError, geolocationOptions);
   } else {
-    console.error("Geolocalização não é suportada neste navegador.");
+    console.error("Geolocation is not available.");
   }
 };
 
-const getCoords = (position) => {
-  const { latitude, longitude, accuracy } = position.coords;
+async function getCoords(position) {
+  const { latitude, longitude } = position.coords;
   console.log(`Latitude: ${latitude}`);
   console.log(`Longitude: ${longitude}`);
-  console.log(`Precisão: ${accuracy} metros`);
-
 
   const baseURL = `https://api.openweathermap.org/data/2.5/weather`;
-  const options = `?lat=${latitude}&lon=${longitude}&appid=${OPEN_WEATHER_API}`;
-  const url = `${baseURL}${options}`;
+  const options = `lang=pt_br&units=metric`;
+  const params = `?lat=${latitude}&lon=${longitude}&${options}&appid=${OPEN_WEATHER_API}`;
+  const url = `${baseURL}${params}`;
 
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`API request failed with status: ${response.status}`);
+    }
+    const weatherData = await response.json();
+    renderWeatherData(weatherData);
+  } catch (error) {
+    alert("Something went wrong. Please try again later.");
+    console.error("Error fetching weather data:", error);
+  }
+}
 
-  fetch(url).then(data => data.json()).then(data => {
-    console.log(data);
-  });
+function renderWeatherData(weatherData) {
+  const forecastEl = document.querySelector(".forecast");
+  forecastEl.innerHTML = `A temperatura em ${weatherData.name} é de ${weatherData.main.temp}°C`;
+}
 
-};
-
-const handleError = (error) => {
+function handleError(error) {
   const errorMessages = {
-    [error.PERMISSION_DENIED]: "Permissão negada pelo usuário.",
-    [error.POSITION_UNAVAILABLE]: "Informações de localização indisponíveis.",
-    [error.TIMEOUT]: "Tempo de solicitação esgotado.",
+    [error.PERMISSION_DENIED]: "Permission denied by the user.",
+    [error.POSITION_UNAVAILABLE]: "Location information is unavailable.",
+    [error.TIMEOUT]: "Timeout.",
   };
-  console.error(errorMessages[error.code] || "Erro desconhecido.");
+
+  alert("Something went wrong. Please try again later.");
+  console.error(errorMessages[error.code] || "Unknown error.");
 };
 
 getUserLocation();
